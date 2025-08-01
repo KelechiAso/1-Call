@@ -141,36 +141,33 @@
         .error-message { color: #ff8a80; /* Softer red */ font-style: italic; border: 1px solid #ff8a80; background-color: #3c2f2f; }
         
         /* New styling for structured bot messages to make them more modular */
-        .bot-message-structured {
-            background-color: #2a2c3b;
-            color: #d0d0e0;
-            margin-right: auto;
-            padding: 15px; /* More padding for a card-like look */
-            border-radius: 18px; /* Use rounded corners */
-            border-bottom-left-radius: 5px; /* Keep one corner flat for continuity */
-        }
-
-        .bot-message-structured h3 { /* Use H3 for sport titles */
+        /*
+        The `.bot-message-structured` class is a great idea, but with a Markdown
+        parser, we can rely on standard HTML tags for styling instead.
+        I've updated the CSS to style the generated tags.
+        */
+        .bot-message h3 { /* Using h3 for bolded headings from markdown */
             color: #4CAF50;
             border-bottom: 1px solid #3a3a5a;
             padding-bottom: 5px;
             margin-top: 10px;
+            font-size: 1.2em; /* Adjusted for better readability */
         }
         
-        .bot-message-structured ul {
+        .bot-message ul {
             list-style: none; /* Remove default bullet points */
             padding: 0;
             margin: 10px 0;
         }
 
-        .bot-message-structured ul li {
+        .bot-message ul li {
             padding: 5px 0;
             border-left: 2px solid #5a5a70;
             padding-left: 10px;
             margin-bottom: 5px;
         }
 
-        .bot-message-structured ul li strong {
+        .bot-message ul li strong {
             color: #e0e0e0;
         }
         /* End of new styling */
@@ -230,6 +227,8 @@
         h4, h5 { margin-top: 15px; margin-bottom: 5px; color: #e0e0e0; }
 
     </style>
+    <!-- Add the marked.js library for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
     <div class="dashboard-container">
@@ -295,7 +294,8 @@
             
             if (isHtml) {
                 msgDiv.innerHTML = content;
-                msgDiv.classList.add('message', 'bot-message-structured');
+                // Add the class for bot messages
+                msgDiv.classList.add('message', 'bot-message');
             } else {
                 msgDiv.textContent = content;
                 msgDiv.classList.add('message');
@@ -311,38 +311,8 @@
 
         // New function to parse Markdown-like text into HTML
         function parseAndFormatLLMResponse(text) {
-            // Check if the response contains any markdown markers
-            if (!text.includes('**') && !text.includes('*') && !text.includes('---')) {
-                // If not, just return as a plain paragraph
-                return `<p>${text}</p>`;
-            }
-
-            // Replace common markdown with HTML
-            let html = text
-                // Replace paragraphs and line breaks
-                .replace(/\n\n/g, '</p><p>')
-                .replace(/\n/g, '<br>')
-                // Replace horizontal rules
-                .replace(/\*\*\*+/g, '<hr>')
-                // Replace bold text with h3 for headings
-                .replace(/\*\*(.*?)\*\*/g, '<h3>$1</h3>')
-                // Replace bullet points with ul/li
-                .replace(/<br>\* /g, '</li><li>') // Fix list items
-                .replace(/\* /g, '</li><li>'); // Initial list items
-
-            // Clean up and add ul tags
-            html = `<ul><li>${html}</li></ul>`;
-            html = html.replace(/<ul><li><br>/g, '<ul><li>');
-            html = html.replace(/<br><\/li>/g, '</li>');
-            html = html.replace(/<li><br>/g, '</li><li>');
-
-            // Handle cases where a list starts immediately without a leading paragraph
-            if (html.startsWith("<ul><li>Here are") || html.startsWith("<ul><li>Hello")) {
-                html = html.replace("<ul><li>", "<p>");
-                html = html.replace("</li><ul>", "</p><ul>");
-            }
-
-            return html;
+             // Use marked.js to convert the markdown text to HTML
+             return marked.parse(text);
         }
 
         async function sendMessage() {
@@ -617,7 +587,7 @@
                 const headers = ['Player', 'Team', ...Array.from(allStatKeys).sort()];
 
                 html += '<table><thead><tr>';
-                headers.forEach(header => html += `<th>${safeText(header)}</th>`);
+                headers.forEach(header => html += `<th>${safeText(header)}</th>`;);
                 html += '</tr></thead><tbody>';
 
                 data.players.forEach(player => {
@@ -639,7 +609,7 @@
             html += `<p>${safeText(data.explanation)}</p>`;
             if (data.related_terms && data.related_terms.length > 0) {
                 html += '<h5>Related Terms:</h5><ul>';
-                data.related_terms.forEach(term => html += `<li>${safeText(term)}</li>`);
+                data.related_terms.forEach(term => html += `<li>${safeText(term)}</li>`;);
                 html += '</ul>';
             }
             return html;
@@ -671,7 +641,7 @@
             html += `<p>${safeText(data.details)}</p>`;
             if (data.key_points && data.key_points.length > 0) {
                 html += '<h5>Key Points:</h5><ul>';
-                data.key_points.forEach(point => html += `<li>${safeText(point)}</li>`);
+                data.key_points.forEach(point => html += `<li>${safeText(point)}</li>`;);
                 html += '</ul>';
             }
             if(data.confidence_level) html += `<p><small>Confidence: ${safeText(data.confidence_level)}</small></p>`;
@@ -693,6 +663,37 @@
                 html += '</ul>';
             }
             return html;
+        }
+        // UI Component Rendering function
+        const component_map = {
+            'h2h_summary_table': generateH2HTableHTML,
+            'match_schedule_table': generateScheduleTableHTML,
+            'standings_table': generateStandingsTableHTML,
+            'player_profile_card': generatePlayerProfileHTML,
+            'team_news_list': generateNewsListHTML,
+            'team_stats_card': generateTeamStatsHTML,
+            'results_list': generateResultsListHTML,
+            'live_match_feed': generateLiveMatchFeedHTML,
+            'match_lineups': generateMatchLineupsHTML,
+            'top_performers_table': generateTopPerformersHTML,
+            'player_comparison_table': generatePlayerComparisonHTML,
+            'term_explanation': generateTermExplanationHTML,
+            'suggestion_card': generateSuggestionCardHTML,
+            'percentage_card': generatePercentageCardHTML,
+        };
+
+        function renderUiComponent(ui_data) {
+            if (!ui_data || ui_data.component_type === 'generic_text') {
+                uiComponentsDiv.innerHTML = '<p>No specific UI data provided in this response.</p>';
+                return;
+            }
+
+            const generator = component_map[ui_data.component_type];
+            if (generator) {
+                uiComponentsDiv.innerHTML = generator(ui_data.data);
+            } else {
+                uiComponentsDiv.innerHTML = `<p class="error-message">Unknown component type: ${safeText(ui_data.component_type)}</p>`;
+            }
         }
 
     </script>
