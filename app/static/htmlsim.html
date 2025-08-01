@@ -587,7 +587,7 @@
                 const headers = ['Player', 'Team', ...Array.from(allStatKeys).sort()];
 
                 html += '<table><thead><tr>';
-                headers.forEach(header => html += `<th>${safeText(header)}</th>`;);
+                headers.forEach(header => html += `<th>${safeText(header)}</th>`);
                 html += '</tr></thead><tbody>';
 
                 data.players.forEach(player => {
@@ -609,7 +609,7 @@
             html += `<p>${safeText(data.explanation)}</p>`;
             if (data.related_terms && data.related_terms.length > 0) {
                 html += '<h5>Related Terms:</h5><ul>';
-                data.related_terms.forEach(term => html += `<li>${safeText(term)}</li>`;);
+                data.related_terms.forEach(term => html += `<li>${safeText(term)}</li>`);
                 html += '</ul>';
             }
             return html;
@@ -641,7 +641,7 @@
             html += `<p>${safeText(data.details)}</p>`;
             if (data.key_points && data.key_points.length > 0) {
                 html += '<h5>Key Points:</h5><ul>';
-                data.key_points.forEach(point => html += `<li>${safeText(point)}</li>`;);
+                data.key_points.forEach(point => html += `<li>${safeText(point)}</li>`);
                 html += '</ul>';
             }
             if(data.confidence_level) html += `<p><small>Confidence: ${safeText(data.confidence_level)}</small></p>`;
