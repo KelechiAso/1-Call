@@ -1,25 +1,20 @@
-# /app/main.py
 
 import os
 import traceback
+import json
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import StreamingResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from typing import Dict, List, Any, AsyncGenerator
 
 # --- Service Import ---
-try:
-    # This single import points to the main orchestrator in the service file
-    from .api.openai_service import process_user_query
-except ImportError:
-    traceback.print_exc()
-    raise RuntimeError("Could not import the AI service. Ensure the file structure is correct: /app/api/openai_service.py")
+from .api.openai_service import stream_llm_response
 
 # --- App Setup ---
 app = FastAPI(
-    title="Sports Chatbot Microservice (SPAI) - v6.0 Two-Call",
-    description="Provides sports info using a two-call (Gather -> Present) OpenAI architecture."
+    title="Streaming Chatbot Microservice",
+    description="Provides streaming responses using an OpenAI LLM with history."
 )
 
 app.add_middleware(
@@ -34,14 +29,7 @@ app.add_middleware(
 class ChatRequest(BaseModel):
     user_id: str = "default_user"
     query: str
-
-class ChatResponse(BaseModel):
-    reply: str
-    ui_data: Dict[str, Any]
-
-# --- In-Memory History ---
-conversation_histories: Dict[str, List[Dict[str, str]]] = {}
-HISTORY_LIMIT = 10 # Store the last 5 user/assistant turns
+    history: List[Dict[str, str]] = []
 
 # --- Routes ---
 @app.get("/", response_class=FileResponse, include_in_schema=False)
@@ -51,42 +39,25 @@ async def read_index():
         raise HTTPException(status_code=404, detail="Index HTML not found.")
     return FileResponse(html_file_path)
 
-@app.get("/health")
-async def health_check():
-    return {"status": "ok_v6.0"}
-
-@app.post("/chat", response_model=ChatResponse)
-async def handle_chat(request: ChatRequest):
-    print(f"--- /chat CALLED by user: {request.user_id}, query: '{request.query[:60]}...' ---")
+@app.post("/chat-stream")
+async def handle_chat_stream(request: ChatRequest):
     if not request.query:
         raise HTTPException(status_code=400, detail="Query cannot be empty")
-
-    user_id = request.user_id
-    user_query = request.query
-    current_history = conversation_histories.get(user_id, [])
-
-    try:
-        # --- Single entry point for the entire process ---
-        final_result = await process_user_query(user_query, current_history)
-
-        # --- Update History ---
-        current_history.append({"role": "user", "content": user_query})
-        if final_result and final_result.get("reply"):
-            current_history.append({"role": "assistant", "content": final_result["reply"]})
         
-        conversation_histories[user_id] = current_history[-HISTORY_LIMIT:]
-        print(f">>> History for {user_id} updated. New length: {len(conversation_histories[user_id])}")
-
-        # --- Return Response ---
-        return ChatResponse(reply=final_result["reply"], ui_data=final_result["ui_data"])
-
+    print(f"--- /chat-stream CALLED by user: {request.user_id}, query: '{request.query[:60]}...' ---")
+    
+    try:
+        return StreamingResponse(
+            stream_llm_response(request.query, request.history),
+            media_type="text/event-stream"
+        )
     except Exception as e:
         error_type = type(e).__name__
-        print(f"!!! UNHANDLED EXCEPTION in /chat endpoint: {error_type} - {e}")
+        print(f"!!! UNHANDLED EXCEPTION in /chat-stream endpoint: {error_type} - {e}")
         traceback.print_exc()
-        return ChatResponse(
-            reply=f"A critical server error ({error_type}) occurred. Please try again later.",
-            ui_data={"component_type": "generic_text", "data": {"error": f"Server error: {error_type}"}}
+        return StreamingResponse(
+            iter([f"data: {json.dumps({'error': True, 'message': f'Server error: {error_type}'})}\n\n"]),
+            media_type="text/event-stream"
         )
 
 print("--- app/main.py: Application startup complete. ---")
