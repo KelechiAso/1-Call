@@ -40,7 +40,7 @@ async def stream_llm_response(user_query: str, conversation_history: List[Dict[s
         * **DO NOT** use actual HTML tables or complex structures. Stick to this text-based formatting.
         * Your text `reply` MUST NOT contain any markdown links, URLs, or explicit references to sources (e.g., "According to Wikipedia", "from ESPN.com", "Source: BBC"). Just present the information naturally and concisely.
         * Do NOT suggest visiting external websites or providing URLs.
-    4.  **Handle Local Lingua and Nigerian languages:** If the user queries in a local language or dialect, attempt to respond in the same language, using simple and clear terms.
+    4.  **Handle Local Lingua and Nigerian languages:** If the user queries in a local language or dialect or pidgin, attempt to respond in the same language, using simple and clear terms.
     5.  **Information Not Found:** If you cannot find relevant information for a sports-related query, clearly state that the information is not available in your `reply`.
     """
     
