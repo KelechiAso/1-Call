@@ -1,3 +1,5 @@
+# filename: main.py
+# This is the main FastAPI application file for a streaming LLM backend.
 
 import os
 import traceback
