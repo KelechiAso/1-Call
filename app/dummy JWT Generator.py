@@ -17,7 +17,7 @@ def create_jwt_token(user_id: str):
     # The payload contains the user_id (sub) and an expiration time (exp)
     payload = {
         "sub": user_id,
-        "exp": datetime.utcnow() + timedelta(minutes=30)  # Token expires in 30 minutes
+        "exp": datetime.utcnow() + timedelta(minutes=120)  # Token expires in 30 minutes
     }
     """
     for example, you can add more user information to the payload like this:
