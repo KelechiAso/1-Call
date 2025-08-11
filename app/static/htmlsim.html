@@ -182,11 +182,15 @@
         const userInput = document.getElementById('userInput');
         const sendButton = document.getElementById('sendButton');
         const loadingIndicator = document.getElementById('loadingIndicator');
-
+        //--==> Kindly replace this token with the  valid JWT signed by your secret key from SP backend. <==-- --==> for testing purpose you can generate a dummy token using the dummy JWT Generator.py script <==--
+        //--==> Kindly replace this token with the  valid JWT signed by your secret key from SP backend. <==-- --==> for testing purpose you can generate a dummy token using the dummy JWT Generator.py script <==--
+        //--==> Kindly replace this token with the  valid JWT signed by your secret key from SP backend. <==-- --==> for testing purpose you can generate a dummy token using the dummy JWT Generator.py script <==--
+        //--==> Kindly replace this token with the  valid JWT signed by your secret key from SP backend. <==--
+        //--==> for now i am using a string placeholder, pls replace it with a valid token <==--
+        const USER_JWT_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0LXVzZXItMDAxIiwiZXhwIjoxNzU0OTA4NjEyfQ.c82sUZkJxzG-qs3de_sc81Z4CCBFQ2WSsRTCHKGfCKg";
+        
         let conversationHistory = [];
         let renderTimer = null;
-
-        const userId = 'session_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
 
         sendButton.addEventListener('click', sendMessage);
         userInput.addEventListener('keypress', function (e) {
@@ -217,6 +221,13 @@
         async function sendMessage() {
             const query = userInput.value.trim();
             if (!query) return;
+//==> a reminder here as a safety check to change token before deploying to production <==   
+//==> a reminder here as a safety check to change token before deploying to production <==
+//==> a reminder here as a safety check to change token before deploying to production <==  
+            if (USER_JWT_TOKEN === "your_platform_generated_jwt_token_here") {
+                appendMessage("Please replace the placeholder token in the JavaScript code with a real JWT token from your platform.", 'bot', true);
+                return;
+            }
 
             appendMessage(query, 'user');
             conversationHistory.push({ role: 'user', content: query });
@@ -232,8 +243,12 @@
             try {
                 const response = await fetch('/chat-stream', { 
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: userId, query: query, history: recentHistory })
+                    headers: { 
+                        //--==> Pass the JWT token in the authorization header <==--
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${USER_JWT_TOKEN}` // Pass the token in the Authorization header
+                    },
+                    body: JSON.stringify({ query: query, history: recentHistory })
                 });
 
                 if (!response.ok) {

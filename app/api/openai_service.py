@@ -17,9 +17,9 @@ if not openai_api_key:
 
 client = AsyncOpenAI(api_key=openai_api_key)
 
-print("--- openai_service.py: AsyncOpenAI client INITIALIZED for streaming with history ---")
+print("--==> openai_service.py: AsyncOpenAI client INITIALIZED for streaming with history <==--")
 
-async def stream_llm_response(user_query: str, conversation_history: List[Dict[str, str]]) -> AsyncGenerator[str, None]:
+async def stream_llm_response(user_query: str, conversation_history: List[Dict[str, str]], user_id: str) -> AsyncGenerator[str, None]:
     """
     Calls the OpenAI API with stream=True and yields the content of each chunk.
     This function is an asynchronous generator.
@@ -29,9 +29,10 @@ async def stream_llm_response(user_query: str, conversation_history: List[Dict[s
     You have integrated search capabilities to find real-time, comprehensive, and up-to-date sports information.
     Respond to the user's query by providing a response that is clearly formatted using Markdown. Use headings, bold text, and bullet points to make the information easy to read and understand.
     Your tasks are:
-    1.  **Understand the User's Intent:** Analyze the user's query and the conversation history to determine what sports information they are seeking.
-    2.  **Gather Data (Implicit Search):** Use your integrated search to find all necessary factual information (statistics, schedules, player details, news, live scores, etc.).
-    3.  **Generate a Friendly and STRUCTURED Reply:** Formulate a concise and helpful text `reply` based on the gathered information.
+    1.  **User Identification:** Identify the user making the request using the provided user_id and other personal information. and respond with personalised information: like name when appropriate. do not output any sensitive user information.
+    2.  **Understand the User's Intent and Language:** Analyze the user's query and the conversation history to determine what sports information they are seeking, ensure the reply language matches the user's original query language to keep the vibe, it could be English, Pidgin, Yoruba, Igbo etc.
+    3.  **Gather Data (Implicit Search):** Use your integrated search to find all necessary factual information (statistics, schedules, player details, news, live scores, etc.).
+    4.  **Generate a Friendly and STRUCTURED Reply:** Formulate a concise and helpful text `reply` based on the gathered information.
         * **CRITICAL for formatting:** Organize the information in a clear, modular way.
         * **ALWAYS** use bolded headings (`**Sport Name**`) for each sport or major topic.
         * **ALWAYS** use a blank line to separate each sport or major section.
@@ -40,8 +41,8 @@ async def stream_llm_response(user_query: str, conversation_history: List[Dict[s
         * **DO NOT** use actual HTML tables or complex structures. Stick to this text-based formatting.
         * Your text `reply` MUST NOT contain any markdown links, URLs, or explicit references to sources (e.g., "According to Wikipedia", "from ESPN.com", "Source: BBC"). Just present the information naturally and concisely.
         * Do NOT suggest visiting external websites or providing URLs.
-    4.  **Handle Local Lingua and Nigerian languages:** If the user queries in a local language or dialect or pidgin, attempt to respond in the same language, using simple and clear terms.
-    5.  **Information Not Found:** If you cannot find relevant information for a sports-related query, clearly state that the information is not available in your `reply`.
+    5.  **Handle Local Lingua and Nigerian languages:** If the user queries in a local language or dialect or pidgin, attempt to respond in the same language, using simple and clear terms.
+    6.  **Information Not Found:** If you cannot find relevant information for a sports-related query, clearly state that the information is not available in your `reply`.
     """
     
     try:
