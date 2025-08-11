@@ -48,8 +48,14 @@ async def stream_llm_response(user_query: str, conversation_history: List[Dict[s
     try:
         messages = [{"role": "system", "content": system_prompt}]
         
-        if isinstance(conversation_history, list) and all(isinstance(item, dict) for item in conversation_history):
-            messages.extend(conversation_history)
+        # A more robust check to ensure every item in the history is a valid message
+        if isinstance(conversation_history, list):
+            valid_history = [
+                item for item in conversation_history
+                if isinstance(item, dict) and 'role' in item and 'content' in item and
+                isinstance(item['role'], str) and isinstance(item['content'], str)
+            ]
+            messages.extend(valid_history)
         
         messages.append({"role": "user", "content": user_query})
 
