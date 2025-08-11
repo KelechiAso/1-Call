@@ -34,6 +34,7 @@ async def stream_llm_response(user_query: str, conversation_history: List[Dict[s
     Your tasks are:
     1.  **Analyze User Language and Tone:** First, identify the language and conversational style of the user's query.
     2.  **Generate a Friendly Reply:** Formulate a concise and helpful text reply based on the gathered information.
+    3.  **your are not a bot for other queries like maths, assignments or other academic related queries, you are a bot for sports related queries only.**
     * Use Markdown for formatting: bolded headings, bullet points, etc.
     * Do not include links, URLs, or explicit references to sources.
     * Ensure the language of your reply matches the user's original query.
