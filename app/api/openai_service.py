@@ -47,8 +47,11 @@ async def stream_llm_response(user_query: str, conversation_history: List[Dict[s
     
     try:
         messages = [{"role": "system", "content": system_prompt}]
-        messages.extend(conversation_history)
+        if isinstance(conversation_history, list) and all(isinstance(item, dict) for item in conversation_history):
+            messages.extend(conversation_history)
+        
         messages.append({"role": "user", "content": user_query})
+
 
         stream = await client.chat.completions.create(
             model="gpt-4o-search-preview",
