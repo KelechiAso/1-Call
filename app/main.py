@@ -91,7 +91,7 @@ async def handle_chat_stream(
     if not request.query:
         raise HTTPException(status_code=400, detail="Query cannot be empty")
         
-    print(f"--- /chat-stream CALLED by user: {request.user_id}, query: '{request.query[:60]}...' ---")
+    print(f"--- /chat-stream CALLED by user: {current_user_id}, query: '{request.query[:60]}...' ---")
     
     try:
         return StreamingResponse(
