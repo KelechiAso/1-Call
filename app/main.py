@@ -95,7 +95,7 @@ async def handle_chat_stream(
     
     try:
         return StreamingResponse(
-            stream_llm_response(request.query, request.history),
+            stream_llm_response(request.query, request.history, current_user_id),
             media_type="text/event-stream"
         )
     except Exception as e:
